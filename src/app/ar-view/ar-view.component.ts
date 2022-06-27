@@ -1,6 +1,7 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { AmbientLight, BoxBufferGeometry, Color, DirectionalLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
 @Component({
   selector: 'app-ar-view',
@@ -24,16 +25,19 @@ export class ArViewComponent implements AfterViewInit {
   ambientLight: AmbientLight;
   light: DirectionalLight;
 
-
   constructor() { }
 
   ngAfterViewInit(): void {
-    this.createRenderer();
     this.createScene();
     this.createCamera();
+    this.createRenderer();
     this.createStubCube();
+    this.createVRButton();
+  }
 
-    this.render();
+  createVRButton() {
+    let vrButton = VRButton.createButton(this.renderer);
+    document.body.appendChild(vrButton);
   }
 
   createStubCube() {
@@ -46,23 +50,29 @@ export class ArViewComponent implements AfterViewInit {
 
   createRenderer() {
     this.renderer = new WebGLRenderer({ antialias: true });
+    this.resizeRenderer();
+    this.renderer.xr.enabled = true;
+    this.renderer.outputEncoding = sRGBEncoding;
+    this.viewerWrapperRef.nativeElement.appendChild(this.renderer.domElement);
+    this.renderer.setClearColor(0x543210);
+    this.renderer.setAnimationLoop(() => this.render());
+  }
+
+  private resizeRenderer() {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     let canvasWidth = this.canvas.clientWidth;
     let canvasHeight = this.canvas.clientHeight;
     this.renderer.setSize(canvasWidth, canvasHeight);
-    this.renderer.outputEncoding = sRGBEncoding;
-    this.viewerWrapperRef.nativeElement.appendChild(this.renderer.domElement);
-    this.renderer.setClearColor(0x543210);
   }
 
   createCamera() {
-    let ratio = this.canvas.clientWidth / this.canvas.clientHeight;
-    this.camera = new PerspectiveCamera(45, ratio, 1, 800);
-    this.camera.position.set(-5, 5, 5);
-
+    let ratio = window.innerWidth / window.innerHeight;
+    this.camera = new PerspectiveCamera(45, ratio, 0.1, 800);
+    this.camera.position.set(-1, 5, 10);
+    this.scene.add(this.camera);
     this.cameraControls = new OrbitControls(
       this.camera,
-      this.renderer.domElement
+      this.canvas
     );
   }
 
@@ -82,5 +92,10 @@ export class ArViewComponent implements AfterViewInit {
     setTimeout(() => {
       requestAnimationFrame(() => this.render());
     }, 1000 / this.fps);
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.resizeRenderer();
   }
 }
