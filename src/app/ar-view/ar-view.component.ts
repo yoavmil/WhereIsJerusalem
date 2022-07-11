@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { AmbientLight, BoxBufferGeometry, Color, DirectionalLight, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, SphereBufferGeometry, sRGBEncoding, WebGLRenderer } from 'three';
+import { AmbientLight, Color, DirectionalLight, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, SphereBufferGeometry, sRGBEncoding, WebGLRenderer } from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
 @Component({
@@ -40,12 +40,12 @@ export class ArViewComponent implements AfterViewInit {
   }
 
   private createSpheresAroundMe() {
-    let radius = 5;
+    let radius = 1.5;
     let count = 10;
     for (let i = 0; i < count; i++) {
-      const geom = new SphereBufferGeometry(0.2);
+      const geom = new SphereBufferGeometry(0.1);
       const mat = new MeshStandardMaterial({
-        color: Math.random() * 0xffffff,
+        color: i > 0 ? Math.random() * 0xffffff : 0x0000ff,
         roughness: 0.7,
         metalness: 0
       });
