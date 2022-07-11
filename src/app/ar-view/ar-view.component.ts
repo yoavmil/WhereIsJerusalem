@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
-import { AmbientLight, BoxBufferGeometry, Color, DirectionalLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AmbientLight, BoxBufferGeometry, Color, DirectionalLight, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, SphereBufferGeometry, sRGBEncoding, WebGLRenderer } from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
 @Component({
@@ -30,7 +30,7 @@ export class ArViewComponent implements AfterViewInit {
     this.createScene();
     this.createCamera();
     this.createRenderer();
-    this.createStubCube();
+    this.createSpheresAroundMe();
     this.createARButton();
   }
 
@@ -39,12 +39,22 @@ export class ArViewComponent implements AfterViewInit {
     document.body.appendChild(vrButton);
   }
 
-  createStubCube() {
-    var geometry = new BoxBufferGeometry(0.25, 0.35, 0.1);
-    var material = new MeshStandardMaterial({ color: 0x123456 });
-
-    let mesh = new Mesh(geometry, material);
-    this.scene.add(mesh);
+  private createSpheresAroundMe() {
+    let radius = 5;
+    let count = 10;
+    for (let i = 0; i < count; i++) {
+      const geom = new SphereBufferGeometry(0.2);
+      const mat = new MeshStandardMaterial({
+        color: Math.random() * 0xffffff,
+        roughness: 0.7,
+        metalness: 0
+      });
+      let sphere = new Mesh(geom, mat);
+      let radian = Math.PI * 2 * i / count
+      sphere.position.setX(radius * Math.cos(radian));
+      sphere.position.setZ(radius * Math.sin(radian)); // it's a Y up world
+      this.scene.add(sphere);
+    }
   }
 
   createRenderer() {
@@ -80,6 +90,7 @@ export class ArViewComponent implements AfterViewInit {
     this.light = new DirectionalLight(0xffffff, 1.0);
     this.scene.add(this.ambientLight);
     this.scene.add(this.light);
+    this.scene.add(new HemisphereLight(0x808080, 0x606060));
   }
 
   render() {
