@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { AmbientLight, Color, DirectionalLight, HemisphereLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, SphereBufferGeometry, sRGBEncoding, WebGLRenderer } from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
+import { CompassService } from '../services/compass.service';
 
 @Component({
   selector: 'app-ar-view',
@@ -24,7 +25,9 @@ export class ArViewComponent implements AfterViewInit {
   ambientLight: AmbientLight;
   light: DirectionalLight;
 
-  constructor() { }
+  constructor(private compass: CompassService) {
+    
+   }
 
   ngAfterViewInit(): void {
     this.createScene();
