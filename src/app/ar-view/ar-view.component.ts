@@ -1,7 +1,6 @@
 import { AfterViewInit, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { AmbientLight, BoxBufferGeometry, Color, DirectionalLight, Mesh, MeshStandardMaterial, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
 @Component({
   selector: 'app-ar-view',
@@ -32,16 +31,16 @@ export class ArViewComponent implements AfterViewInit {
     this.createCamera();
     this.createRenderer();
     this.createStubCube();
-    this.createVRButton();
+    this.createARButton();
   }
 
-  createVRButton() {
-    let vrButton = VRButton.createButton(this.renderer);
+  createARButton() {
+    let vrButton = ARButton.createButton(this.renderer);
     document.body.appendChild(vrButton);
   }
 
   createStubCube() {
-    var geometry = new BoxBufferGeometry(1, 1, 2);
+    var geometry = new BoxBufferGeometry(0.25, 0.35, 0.1);
     var material = new MeshStandardMaterial({ color: 0x123456 });
 
     let mesh = new Mesh(geometry, material);
@@ -49,12 +48,14 @@ export class ArViewComponent implements AfterViewInit {
   }
 
   createRenderer() {
-    this.renderer = new WebGLRenderer({ antialias: true });
+    this.renderer = new WebGLRenderer(
+      { antialias: true, alpha: false }
+    );
     this.resizeRenderer();
     this.renderer.xr.enabled = true;
     this.renderer.outputEncoding = sRGBEncoding;
     this.viewerWrapperRef.nativeElement.appendChild(this.renderer.domElement);
-    this.renderer.setClearColor(0x543210);
+    this.renderer.setClearColor(new Color('lightgrey'), 0);
     this.renderer.setAnimationLoop(() => this.render());
   }
 
@@ -70,16 +71,11 @@ export class ArViewComponent implements AfterViewInit {
     this.camera = new PerspectiveCamera(45, ratio, 0.1, 800);
     this.camera.position.set(-1, 5, 10);
     this.scene.add(this.camera);
-    this.cameraControls = new OrbitControls(
-      this.camera,
-      this.canvas
-    );
   }
 
   createScene() {
     this.scene = new Scene();
-    this.scene.background = new Color(0xaaaaaa);
-    this.ambientLight = new AmbientLight(0x333333); // 0.2
+    this.ambientLight = new AmbientLight(0xcccccc, 1.00);
 
     this.light = new DirectionalLight(0xffffff, 1.0);
     this.scene.add(this.ambientLight);
@@ -88,14 +84,5 @@ export class ArViewComponent implements AfterViewInit {
 
   render() {
     this.renderer.render(this.scene, this.camera);
-
-    setTimeout(() => {
-      requestAnimationFrame(() => this.render());
-    }, 1000 / this.fps);
-  }
-
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this.resizeRenderer();
   }
 }
